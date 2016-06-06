@@ -19,4 +19,4 @@ def test_ship(board,ship):
             for ii in xrange(ship[0], ship[2]):
                 if board[jj][ii] == 'x' or  board [jj][ii] == 'n':
                     return false
-    return not ( is_out_of_bounds() && is_legal() )
+    return not ( is_out_of_bounds() and is_legal() )
