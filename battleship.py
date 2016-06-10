@@ -1,3 +1,4 @@
+import random as r
 import string
 import numpy as np
 import matplotlib.pyplot as plt
@@ -50,4 +51,57 @@ def combo_grid(board,shiplengths):
             for ss in shiplengths:
                 combogrid[jj][ii] += len(valid_combinations(board,ii,jj,ss))
     return combogrid
+
+def set_ship(board,ship):
+    board = np.copy(board)
+    def setclr(x,y):
+        def outbounds(x,y):
+            return x < 0 or y < 0 or x >= board.shape[1] or y >= board.shape[0]
+        for jj in range(y-1,y+2):
+            for ii in range(x-1,x+2):
+                if (not outbounds(ii,jj)) and board[jj,ii] == WTR:
+                    board[jj,ii] = CLR
+        return board
+
+    for jj in range(ship[1],ship[1] + ship[3]):
+        for ii in range(ship[0], ship[0] + ship[2]):
+            if board[jj,ii] == SHP:
+                return (board,False)
+    for jj in range(ship[1],ship[1] + ship[3]):
+        for ii in range(ship[0], ship[0] + ship[2]):
+            board[jj, ii] = SHP
+    for jj in range(ship[1],ship[1] + ship[3]):
+        for ii in range(ship[0], ship[0] + ship[2]):
+             board = setclr(ii,jj)
+    return (board,True)
+
+def create_new_board(shape,shiplengths):
+    board = np.zeros(shape)
+    for sl in sorted(shiplengths,reverse=True):
+        while True:
+            com = valid_combinations(board,r.randrange(shape[1]), r.randrange(shape[0]),sl)
+            if not com:
+                continue
+            board,success = set_ship(board,r.choice(list(com)))
+            if not success:
+                continue
+            break
+    return board
+
+def set_bomb(board,x,y,r):
+    board = np.copy(board)
+    def outbounds(x,y):
+       return x < 0 or y < 0 or x >= board.shape[1] or y >= board.shape[0]
+    if r == WTR:
+        board[y,x] = CLR
+    if r == SHP:
+        board[y,x] = SHP
+    for jj in range(board.shape[0]):
+        for ii in range(board.shape[1]):
+            if board[jj,ii] == SHP:
+                for kk in (ii+1,ii-1):
+                    for ll in (jj+1,jj-1):
+                        if not outbounds(kk,ll) and board[kk,ll] == WTR:
+                            board[kk,ll] = CLR
+    return board
 
