@@ -11,7 +11,7 @@ bombable = set([WTR])
 
 def lettotup(pos):
     let = dict(zip(string.ascii_lowercase,[ord(c)%32 for c in string.ascii_lowercase]))
-    return (int(pos[0])-1,let[pos[1]]-1)
+    return (int(pos[1]),let[pos[0]]-1)
 
 def valid_placement(board,ship):
     def is_out_of_bounds():
@@ -91,17 +91,37 @@ def create_new_board(shape,shiplengths):
 def set_bomb(board,x,y,r):
     board = np.copy(board)
     def outbounds(x,y):
+        return x < 0 or y < 0 or x >= board.shape[1] or y >= board.shape[0]
+    if outbounds(x,y):
+        return board
+    board[y,x] = r
+    return board
+
+def find_clear(board,shiplens):
+    board = np.copy(board)
+    def outbounds(x,y):
        return x < 0 or y < 0 or x >= board.shape[1] or y >= board.shape[0]
-    if r == WTR:
-        board[y,x] = CLR
-    if r == SHP:
-        board[y,x] = SHP
     for jj in range(board.shape[0]):
         for ii in range(board.shape[1]):
             if board[jj,ii] == SHP:
                 for kk in (ii+1,ii-1):
                     for ll in (jj+1,jj-1):
-                        if not outbounds(kk,ll) and board[kk,ll] == WTR:
-                            board[kk,ll] = CLR
+                        if (not outbounds(kk,ll)) and board[ll,kk] != SHP:
+                            board[ll,kk] = CLR
+    # Eliminate impossible positions
+    combo = combo_grid(board,shiplens)
+    for jj in range(board.shape[0]):
+        for ii in range(board.shape[1]):
+            if combo[jj,ii] is 0:
+                board[jj,ii] = 2
     return board
+
+def wrandom(combo,num):
+    coords = []
+    for jj in range(combo.shape[0]):
+        for ii in range(combo.shape[1]):
+            for cc in range(int(combo[jj,ii])):
+                coords.append((ii,jj))
+    return [ r.choice(coords) for i in range(num) ]
+
 
